@@ -49,17 +49,11 @@ namespace Services
             }
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
             user.Roles = new List<Role>();
+            user.Roles.Add(await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User"));
 
-            if (userDto.RoleIds != null)
+            if(_context.Users.Any(u => u.Email == user.Email))
             {
-                foreach (var roleId in userDto.RoleIds)
-                {
-                    var existingRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
-                    if (existingRole != null)
-                    {
-                        user.Roles.Add(existingRole);
-                    }
-                }
+                throw new DataException("Email already exists.");
             }
 
             if (!user.Roles.Any())

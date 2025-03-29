@@ -27,8 +27,27 @@ namespace Services.Services
             _context = cryptoDbContext;
             _mapper = mapper;
         }
+
+        public async Task<IList<CryptoDto>> GetAllCryptosAsync()
+        {
+            return await _context.Cryptos.Select(c => _mapper.Map<CryptoDto>(c)).ToListAsync();
+        }
+
+        public async  Task<CryptoDto> GetCryptoByIdAsync(int cryptoId)
+        {
+            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoId);
+            if(crypto == null)
+            {
+                throw new Exception("Crypto not found");
+            }
+            return _mapper.Map<CryptoDto>(crypto);
+        }
         public async Task<CryptoDto> AddCryptoAsync(CryptoDto newCrypto)
         {
+            if (_context.Cryptos.Count() >= 15)
+            {
+                throw new Exception("Maximum number of cryptos reached");
+            }
             var crypto = _mapper.Map<Crypto>(newCrypto);
             await _context.Cryptos.AddAsync(crypto);
             await _context.SaveChangesAsync();
@@ -44,21 +63,6 @@ namespace Services.Services
             }
             _context.Cryptos.Remove(crypto);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<IList<CryptoDto>> GetAllCryptosAsync()
-        {
-            return await _context.Cryptos.Select(c => _mapper.Map<CryptoDto>(c)).ToListAsync();
-        }
-
-        public async  Task<CryptoDto> GetCryptoByIdAsync(int cryptoId)
-        {
-            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoId);
-            if(crypto == null)
-            {
-                throw new Exception("Crypto not found");
-            }
-            return _mapper.Map<CryptoDto>(crypto);
         }
     }
 }

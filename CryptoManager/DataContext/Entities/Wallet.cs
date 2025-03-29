@@ -10,6 +10,6 @@ namespace DataContext.Entities
     {
         public int UserId { get; set; } 
         public decimal Balance { get; set; }
-        public List<WalletCrypto> Cryptos { get; set; }
+        public List<WalletCrypto> WalletCryptos { get; set; }
     }
 }

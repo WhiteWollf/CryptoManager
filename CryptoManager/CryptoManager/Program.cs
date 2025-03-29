@@ -19,9 +19,42 @@ namespace CryptoManager
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddSwaggerGen(option =>
+            {
+                option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+                option.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
+            });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddDbContext<CryptoDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQL")));
+
+            //Inicializáló szolgáltatás hozzáadása (Cryptok feltöltése, User-ek és Wallet-ek)
+            builder.Services.AddHostedService<InitializerService>();
+
+            //Háttér szolgáltatás hozzáadása (Cryptok árának frissítése)
+            builder.Services.AddHostedService<CryptoPriceBackgroundService>();
 
             builder.Services.AddLocalServices();
 
@@ -55,6 +88,7 @@ namespace CryptoManager
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+                options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
             });
 
             builder.Services.AddCors();
@@ -62,32 +96,7 @@ namespace CryptoManager
             // AutoMapper Config
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-            //Swagger configuration
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "NetpincerApp API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Please insert JWT token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                {
-                    new OpenApiSecurityScheme {
-                        Reference = new OpenApiReference {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    new string[] { }
-                }});
-            });
 
             var app = builder.Build();
 

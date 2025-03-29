@@ -29,7 +29,7 @@ namespace Services.Services
         }
         public async Task<Wallet> GetWalletAsync(int userId)
         {
-            var wallet = await _context.Wallets.Include(w=>w.Cryptos).ThenInclude(c=>c.Crypto).FirstOrDefaultAsync(w => w.UserId == userId);
+            var wallet = await _context.Wallets.Include(w=>w.WalletCryptos).ThenInclude(c=>c.Crypto).FirstOrDefaultAsync(w => w.UserId == userId);
             if (wallet == null) 
                 return null;
             return wallet;

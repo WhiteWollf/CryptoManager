@@ -70,5 +70,6 @@ namespace CryptoManager.Controllers
                 return BadRequest(e.Message);
             }
         }
+
     }
 }

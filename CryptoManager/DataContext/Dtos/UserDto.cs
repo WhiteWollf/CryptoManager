@@ -27,8 +27,6 @@ public class UserRegisterDto
     [Required]
     [MinLength(6)]
     public string PasswordConfirm { get; set; }
-
-    public IList<int> RoleIds { get; set; }
 }
 
 public class ChangePasswordDto
