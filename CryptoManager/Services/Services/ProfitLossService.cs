@@ -33,11 +33,16 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
+            if (wallet.WalletCryptos.Count() == 0)
+            {
+                throw new Exception("Wallet is empty");
+            }
             List<CryptoProfitLossDto> cryptoProfitLossDtos = new List<CryptoProfitLossDto>();
             foreach (var item in wallet.WalletCryptos)
             {
                 decimal buyValue = item.BuyPrice * item.Amount;
                 decimal currentValue = item.Crypto.Price * item.Amount;
+
                 cryptoProfitLossDtos.Add(new CryptoProfitLossDto()
                 {
                     CryptoName = item.Crypto.Name,
@@ -57,6 +62,10 @@ namespace Services.Services
             if (wallet == null)
             {
                 throw new Exception("Wallet not found");
+            }
+            if(wallet.WalletCryptos.Count() == 0)
+            {
+                throw new Exception("Wallet is empty");
             }
             decimal profitloss = wallet.WalletCryptos.Sum(wc => (wc.Crypto.Price - wc.BuyPrice) * wc.Amount);
             decimal buyValue = wallet.WalletCryptos.Sum(wc => wc.BuyPrice * wc.Amount);

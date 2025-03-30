@@ -48,10 +48,26 @@ namespace Controllers
             }
         }
 
+        [HttpPost("changePassword")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            try
+            {
+                var userId = int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+                var res = await _userService.ChangePasswordAsync(userId, changePasswordDto);
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         //[Authorize]
         [HttpPut("{userId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UserUpdateDto userDto)
+        public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UserUpdateDto userDto)
         {
             try
             {
@@ -60,7 +76,7 @@ namespace Controllers
                  {
                      return Unauthorized();
                  }*/
-                var result = await _userService.UpdateProfileAsync(id, userDto);
+                var result = await _userService.UpdateProfileAsync(userId, userDto);
                 return Ok(result);
             }
             catch (Exception e)

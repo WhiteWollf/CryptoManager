@@ -13,8 +13,8 @@ namespace Services.Services
 {
     public interface ITradeService
     {
-        Task<CryptoDto> BuyCryptoAsync(int userId, int cryptoId, int amount);
-        Task<CryptoDto> SellCryptoAsync(int userId, int cryptoId, int amount);
+        Task<TransactionDto> BuyCryptoAsync(int userId, CryptoBuySellDto cryptoBuyDto);
+        Task<TransactionDto> SellCryptoAsync(int userId, CryptoBuySellDto cryptoBuyDto);
         Task<PortfolioDto> GetPortfolio(int userId);
     }
 
@@ -28,9 +28,9 @@ namespace Services.Services
             _mapper = mapper;
         }
 
-        public async Task<CryptoDto> BuyCryptoAsync(int userId, int cryptoId, int amount)
+        public async Task<TransactionDto> BuyCryptoAsync(int userId, CryptoBuySellDto cryptoBuyDto)
         {
-            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoId);
+            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Symbol == cryptoBuyDto.Symbol);
             if(crypto == default)
             {
                 throw new Exception("Crypto not found");
@@ -40,26 +40,26 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
-            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId==cryptoId);
+            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId==crypto.Id);
             
-            if(crypto.Available < amount)
+            if(crypto.Available < cryptoBuyDto.Amount)
             {
                 throw new Exception("Not enough crypto available");
             }
-            if (userWallet.Balance < crypto.Price * amount)
+            if (userWallet.Balance < crypto.Price * cryptoBuyDto.Amount)
             {
                 throw new Exception("Not enough balance");
             }
-            userWallet.Balance -= crypto.Price * amount;
-            crypto.Available -= amount;
+            userWallet.Balance -= crypto.Price * cryptoBuyDto.Amount;
+            crypto.Available -= cryptoBuyDto.Amount;
             if (walletcrypto == default)
             {
-                walletcrypto = new WalletCrypto { WalletId = userWallet.Id, CryptoId = crypto.Id, Amount = amount, BuyPrice = crypto.Price};
+                walletcrypto = new WalletCrypto { WalletId = userWallet.Id, CryptoId = crypto.Id, Amount = cryptoBuyDto.Amount, BuyPrice = crypto.Price};
                 await _context.WalletCrypto.AddAsync(walletcrypto);
             }
             else
             {
-                walletcrypto.Amount += amount;
+                walletcrypto.Amount += cryptoBuyDto.Amount;
                 walletcrypto.BuyPrice = crypto.Price;
             }
 
@@ -68,24 +68,28 @@ namespace Services.Services
             {
                 UserId = userId,
                 User = user,
-                CryptoId = cryptoId,
+                CryptoId = crypto.Id,
                 Crypto = crypto,
-                Amount = amount,
+                Amount = cryptoBuyDto.Amount,
                 PricePerUnit = crypto.Price,
                 Type = TransactionType.Buy,
-                Description = $"{user.Name} bought {amount} {crypto.Name} for {crypto.Price * amount} $",
+                Description = $"{user.Name} bought {cryptoBuyDto.Amount} {crypto.Name} for {crypto.Price * cryptoBuyDto.Amount} $",
                 Timestamp = DateTime.Now
             };
 
             _context.TransactionLogs.Add(transaction);
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<CryptoDto>(crypto);
+            return _mapper.Map<TransactionDto>(transaction);
         }
 
-        public async Task<CryptoDto> SellCryptoAsync(int userId, int cryptoId, int amount)
+        public async Task<TransactionDto> SellCryptoAsync(int userId, CryptoBuySellDto cryptoBuySellDto)
         {
-            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoId);
+            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Symbol == cryptoBuySellDto.Symbol);
+            if (cryptoBuySellDto.Amount < 0)
+            {
+                throw new Exception("Insufficent amount");
+            }
             if (crypto == default)
             {
                 throw new Exception("Crypto not found");
@@ -95,18 +99,18 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
-            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId == cryptoId);
+            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId == crypto.Id);
             if(walletcrypto == default)
             {
                 throw new Exception("Crypto not found in wallet");
             }
-            if(walletcrypto.Amount < amount)
+            if(walletcrypto.Amount < cryptoBuySellDto.Amount)
             {
                 throw new Exception("Not enough crypto available");
             }
-            crypto.Available += amount;
-            userWallet.Balance += crypto.Price * amount;
-            walletcrypto.Amount -= amount;
+            crypto.Available += cryptoBuySellDto.Amount;
+            userWallet.Balance += crypto.Price * cryptoBuySellDto.Amount;
+            walletcrypto.Amount -= cryptoBuySellDto.Amount;
             walletcrypto.BuyPrice = crypto.Price;
             if (walletcrypto.Amount == 0)
             {
@@ -118,19 +122,19 @@ namespace Services.Services
             {
                 UserId = userId,
                 User = user,
-                CryptoId = cryptoId,
+                CryptoId = crypto.Id,
                 Crypto = crypto,
-                Amount = amount,
+                Amount = cryptoBuySellDto.Amount,
                 PricePerUnit = crypto.Price,
                 Type = TransactionType.Sell,
-                Description = $"{user.Name} sold {amount} {crypto.Name} for {crypto.Price * amount} $",
+                Description = $"{user.Name} sold {cryptoBuySellDto.Amount} {crypto.Name} for {crypto.Price * cryptoBuySellDto.Amount} $",
                 Timestamp = DateTime.Now
             };
 
             _context.TransactionLogs.Add(transaction);
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<CryptoDto>(crypto);
+            return _mapper.Map<TransactionDto>(transaction);
         }
         public async Task<PortfolioDto> GetPortfolio(int userId)
         {

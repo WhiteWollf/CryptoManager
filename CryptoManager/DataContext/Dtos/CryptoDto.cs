@@ -14,4 +14,10 @@ namespace DataContext.Dtos
         public decimal NewPrice { get; set; }
         public decimal Available { get; set; }
     }
+
+    public class CryptoPriceChangeDto
+    {
+        public int CryptoId { get; set; }
+        public int NewPrice { get; set; }
+    }
 }

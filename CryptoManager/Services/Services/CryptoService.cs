@@ -48,6 +48,10 @@ namespace Services.Services
             {
                 throw new Exception("Maximum number of cryptos reached");
             }
+            if (_context.Cryptos.Any(c => c.Symbol == newCrypto.Symbol))
+            {
+                throw new Exception("Crypo already exists");
+            }
             var crypto = _mapper.Map<Crypto>(newCrypto);
             await _context.Cryptos.AddAsync(crypto);
             await _context.SaveChangesAsync();

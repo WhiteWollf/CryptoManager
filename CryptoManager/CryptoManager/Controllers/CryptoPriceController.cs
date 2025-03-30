@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataContext.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Services;
 
@@ -17,11 +18,11 @@ namespace CryptoManager.Controllers
 
         [HttpPut("price")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateCryptoPrice([FromBody] int cryptoId, decimal newPrice)
+        public async Task<IActionResult> UpdateCryptoPrice([FromBody] CryptoPriceChangeDto cryptoPriceChangeDto)
         {
             try
             {
-                var res = await _cryptoPriceService.UpdateCryptoPriceAsync(cryptoId, newPrice);
+                var res = await _cryptoPriceService.UpdateCryptoPriceAsync(cryptoPriceChangeDto);
                 return Ok(res);
             }
             catch (Exception e)

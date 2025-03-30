@@ -7,7 +7,7 @@ public class UserDto
     public int Id { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
-    public IList<RoleDto> Role { get; set; }
+    public IList<RoleDto> Roles { get; set; }
 }
 
 public class UserRegisterDto
@@ -66,9 +66,6 @@ public class UserUpdateDto
     [Required]
     [EmailAddress]
     public string Email { get; set; }
-    [Required]
-    [MinLength(6)]
-    public string Password { get; set; }
 
     public IList<int> RoleIds { get; set; }
 }  

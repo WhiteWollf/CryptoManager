@@ -12,12 +12,6 @@ namespace DataContext.Dtos
         public int UserId { get; set; }
         public decimal Balance { get; set; }
     }
-    public class WalletCryptoDto
-    {
-        public int WalletId { get; set; }
-        public int CryptoId { get; set; }
-        public decimal Amount { get; set; }
-    }
 
     public class CryptoDto
     {
@@ -30,13 +24,12 @@ namespace DataContext.Dtos
     {
         public string CryptoName { get; set; } = string.Empty;
         public string Symbol { get; set; } = string.Empty;
-        public decimal Amount { get; set; } // A user által birtokolt mennyiség
-        public decimal UnitPrice { get; set; } // A kriptovaluta aktuális árfolyama
+        public decimal Amount { get; set; }
+        public decimal BuyPrice { get; set; } 
     }
     // A felhasználó pénztárcájának részletes adatait adja vissza, beleértve a pénztárcában található kriptovaluták listáját
     public class WalletDetailDto
     {
-        public decimal TotalValue { get; set; }
         public decimal Balance { get; set; }
         public List<WalletCryptoDetailDto> Cryptos { get; set; } = new();
     }

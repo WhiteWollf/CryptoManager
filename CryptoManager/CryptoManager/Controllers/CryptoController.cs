@@ -63,7 +63,7 @@ namespace CryptoManager.Controllers
             try
             {
                 await _cryptoService.DeleteCryptoAsync(cryptoId);
-                return NoContent();
+                return Ok("Crypto deleted successfully");
             }
             catch (Exception e)
             {

@@ -27,6 +27,8 @@ namespace Services.Services
             {
                 var _context = scope.ServiceProvider.GetRequiredService<CryptoDbContext>();
 
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
                 var cryptos = new List<Crypto>
                 {
                     new Crypto { Name = "Bitcoin", Symbol = "BTC", Price = 1000000, Available = 1000000 },
@@ -46,6 +48,7 @@ namespace Services.Services
                     new Crypto { Name = "Onecoin", Symbol = "ONE", Price = 1, Available = 1 }
 
                 };
+                _context.Cryptos.RemoveRange(await _context.Cryptos.Where(c=>!cryptos.Select(a=>a.Symbol).Contains(c.Symbol)).ToListAsync(cancellationToken));
                 foreach (var crypto in cryptos)
                 {
                     var existingCrypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Symbol == crypto.Symbol, cancellationToken);
@@ -129,9 +132,9 @@ namespace Services.Services
                 await _context.SaveChangesAsync(cancellationToken);
                 List<WalletCrypto> walletCrypto = new List<WalletCrypto>()
                 {
-                    new WalletCrypto { CryptoId = crypto1.Id, WalletId = adminWallett.Id, Amount = 500 },
-                    new WalletCrypto { CryptoId = crypto2.Id, WalletId = adminWallett.Id, Amount = 5 },
-                    new WalletCrypto { CryptoId = crypto3.Id, WalletId = adminWallett.Id, Amount = 2 }
+                    new WalletCrypto { CryptoId = crypto1.Id, WalletId = adminWallett.Id, Amount = 500, BuyPrice=crypto1.Price },
+                    new WalletCrypto { CryptoId = crypto2.Id, WalletId = adminWallett.Id, Amount = 5, BuyPrice=crypto2.Price },
+                    new WalletCrypto { CryptoId = crypto3.Id, WalletId = adminWallett.Id, Amount = 2 , BuyPrice = crypto3.Price}
                 };
                 crypto1.Available -= 500;
                 crypto2.Available -= 5;
@@ -139,6 +142,8 @@ namespace Services.Services
                 _context.WalletCrypto.AddRange(walletCrypto);
 
                 await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync();
             }
             return;
         }

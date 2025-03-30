@@ -20,7 +20,7 @@ namespace Services
         Task<UserDto> UpdateProfileAsync(int userId, UserUpdateDto userDto);
         Task<IList<RoleDto>> GetRolesAsync();
         Task<UserDto> GetUserAsync(int userId);
-        Task<UserDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
+        Task<UserDto> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
         Task DeleteUserAsync(int userId);
     }
 
@@ -42,6 +42,8 @@ namespace Services
 
         public async Task<UserDto> RegisterAsync(UserRegisterDto userDto)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             var user = _mapper.Map<User>(userDto);
             if(userDto.Password != userDto.PasswordConfirm)
             {
@@ -50,7 +52,7 @@ namespace Services
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
             user.Roles = new List<Role>();
             user.Roles.Add(await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User"));
-
+            
             if(_context.Users.Any(u => u.Email == user.Email))
             {
                 throw new DataException("Email already exists.");
@@ -60,16 +62,17 @@ namespace Services
             {
                 user.Roles.Add(await GetDefaultRoleAsync());
             }
-            
+
             await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
 
             //Új wallet létrehozása a regisztrált felhasználónak
-            Console.WriteLine($"Ellenőrzés UserService regisztráció, Wallet létrehozása: ez itt egy id: -> {user.Id} <- ha igen, akkor át kell írni egy sort, nem kell újból lekérni, hogy az id-ja meglegyen");
-            var addedUser = _context.Users.First(u => u.Email == user.Email);
-            var wallet = new Wallet { UserId = addedUser.Id, Balance = 10000 };
+            var wallet = new Wallet { UserId = user.Id, Balance = 10000 };
             await _context.Wallets.AddAsync(wallet);
 
             await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
 
             return _mapper.Map<UserDto>(user);
         }
@@ -137,6 +140,12 @@ namespace Services
                 throw new KeyNotFoundException("User not found.");
             }
 
+
+            if (_context.Users.Any(u => u.Email == userDto.Email) && userDto.Email != user.Email)
+            {
+                throw new DataException("Email already exists.");
+            }
+
             _mapper.Map(userDto, user);
 
             if (userDto.RoleIds != null && userDto.RoleIds.Any())
@@ -157,8 +166,6 @@ namespace Services
             {
                 user.Roles.Add(await GetDefaultRoleAsync());
             }
-
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
@@ -185,16 +192,27 @@ namespace Services
             {
                 throw new KeyNotFoundException("User not found.");
             }
+            var userwallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == user.Id);
+            List<WalletCrypto> walletCryptos = await _context.WalletCrypto.Where(wc => wc.WalletId == userwallet.Id).ToListAsync();
+            foreach (var item in walletCryptos)
+            {
+                var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id==item.CryptoId);
+                crypto.Available += item.Amount;
+            }
+
+            _context.WalletCrypto.RemoveRange(walletCryptos);
+            _context.Wallets.Remove(userwallet);
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<UserDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        public async Task<UserDto> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == changePasswordDto.Email);
-            if (user == null)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user.Email != changePasswordDto.Email)
             {
-                throw new KeyNotFoundException("User not found.");
+                throw new KeyNotFoundException("Incorrect email.");
             }
             if (changePasswordDto.Password != changePasswordDto.PasswordConfirm)
             {

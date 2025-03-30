@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DataContext.Context;
+using DataContext.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Services.Services
 {
     public interface ITransactionService
     {
-        Task<TransactionDto> GetTransactionsAsync(int userId);
+        Task<IList<TransactionDto>> GetTransactionsAsync(int userId);
         Task<DetailedTransactionDto> GetTransactionDetailsAsync(int transactionId);
     }
     public class TransactionService : ITransactionService
@@ -24,14 +25,14 @@ namespace Services.Services
             _mapper = mapper;
         }
 
-        public async Task<TransactionDto> GetTransactionsAsync(int userId)
+        public async Task<IList<TransactionDto>> GetTransactionsAsync(int userId)
         {
-            var transactions = await _context.TransactionLogs
+            return await _context.TransactionLogs
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Timestamp)
                 .Include(t => t.Crypto)
+                .Select(t => _mapper.Map<TransactionDto>(t))
                 .ToListAsync();
-            return _mapper.Map<TransactionDto>(transactions);
         }
         public async Task<DetailedTransactionDto> GetTransactionDetailsAsync(int transactionId)
         {

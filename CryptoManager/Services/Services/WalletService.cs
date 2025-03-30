@@ -13,7 +13,7 @@ namespace Services.Services
 {
     public interface IWalletService
     {
-        Task<Wallet> GetWalletAsync(int userId);
+        Task<WalletDetailDto> GetWalletAsync(int userId);
         Task<WalletDto> UpdateWalletBalanceAsync(int userId, decimal newBalance);
         Task DeleteWalletAsync(int userId);
     }
@@ -27,12 +27,12 @@ namespace Services.Services
             _context = cryptoDbContext;
             _mapper = mapper;
         }
-        public async Task<Wallet> GetWalletAsync(int userId)
+        public async Task<WalletDetailDto> GetWalletAsync(int userId)
         {
             var wallet = await _context.Wallets.Include(w=>w.WalletCryptos).ThenInclude(c=>c.Crypto).FirstOrDefaultAsync(w => w.UserId == userId);
             if (wallet == null) 
                 return null;
-            return wallet;
+            return _mapper.Map<WalletDetailDto>(wallet);
         }
 
         public async Task<WalletDto> UpdateWalletBalanceAsync(int userId, decimal newBalance)
@@ -50,6 +50,8 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
+            var walletcryptos = wallet.WalletCryptos;
+            _context.WalletCrypto.RemoveRange(walletcryptos);
             _context.Wallets.Remove(wallet);
             await _context.SaveChangesAsync();
         }

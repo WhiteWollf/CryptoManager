@@ -1,4 +1,5 @@
-﻿using DataContext.Entities;
+﻿using DataContext.Dtos;
+using DataContext.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Services;
@@ -16,14 +17,14 @@ namespace CryptoManager.Controllers
         {
             _tradeService = tradeService;
         }
-        [HttpPost("trade/buy/{cryptoId}")]
-        public async Task<IActionResult> BuyCrypto(int cryptoId, [FromBody] int amount)
+        [HttpPost("trade/buy")]
+        public async Task<IActionResult> BuyCrypto([FromBody] CryptoBuySellDto cryptoBuySellDto)
         {
             try
             {
                 var userId = int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-                var crypto = await _tradeService.BuyCryptoAsync(userId, cryptoId, amount);
-                return Ok(crypto);
+                var transaction = await _tradeService.BuyCryptoAsync(userId, cryptoBuySellDto);
+                return Ok(transaction);
             }
             catch (Exception e)
             {
@@ -31,14 +32,14 @@ namespace CryptoManager.Controllers
             }
         }
 
-        [HttpPost("trade/sell/{cryptoId}")]
-        public async Task<IActionResult> SellCrypto(int cryptoId, [FromBody] int amount)
+        [HttpPost("trade/sell")]
+        public async Task<IActionResult> SellCrypto([FromBody] CryptoBuySellDto cryptoBuySellDto)
         {
             try
             {
                 var userId = int.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-                var crypto = await _tradeService.SellCryptoAsync(userId, cryptoId, amount);
-                return Ok(crypto);
+                var transaction = await _tradeService.SellCryptoAsync(userId, cryptoBuySellDto);
+                return Ok(transaction);
             }
             catch (Exception e)
             {

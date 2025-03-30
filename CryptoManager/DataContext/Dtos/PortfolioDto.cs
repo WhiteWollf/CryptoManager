@@ -11,9 +11,9 @@ namespace DataContext.Dtos
     {
         public string CryptoName { get; set; } = string.Empty;
         public string Symbol { get; set; } = string.Empty;
-        public decimal Amount { get; set; } // A user által birtokolt mennyiség
-        public decimal UnitPrice { get; set; } // A kriptovaluta aktuális árfolyama
-        public decimal Value { get; set; } //A felhasználó által birtokolt kriptovaluta értéke
+        public decimal Amount { get; set; }
+        public decimal BuyPrice { get; set; }
+        public decimal Value { get; set; }
     }
     public class PortfolioDto
     {

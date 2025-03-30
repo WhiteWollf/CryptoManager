@@ -4,12 +4,14 @@ namespace Services.Services
 {
     public class TransactionDto
     {
+        public int Id { get; set; }
         public string CryptoName { get; set; }
         public string Symbol { get; set; }
-        public TransactionType Type { get; set; }
+        public string Type { get; set; }
+        public decimal PricePerUnit { get; set; }
         public decimal Amount { get; set; }
         public decimal TotalPrice { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public String Timestamp { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH-mm-ss");
     }
 
     public class DetailedTransactionDto
@@ -17,10 +19,11 @@ namespace Services.Services
         public string CryptoName { get; set; }
         public string Symbol { get; set; }
         public TransactionType Type { get; set; }
+        public decimal PricePerUnit { get; set; }
         public decimal Amount { get; set; }
         public decimal TotalPrice { get; set; }
-        public decimal PricePerUnit { get; set; }
         public decimal CurrentUnitPrice { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public decimal CurrentTotalPrice => Amount * CurrentUnitPrice;
+        public String Timestamp { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH-mm-ss");
     }
 }

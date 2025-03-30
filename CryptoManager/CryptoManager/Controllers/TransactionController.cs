@@ -27,7 +27,7 @@ namespace CryptoManager.Controllers
             }
         }
 
-        [HttpGet("{transactionId}")]
+        [HttpGet("details/{transactionId}")]
         public async Task<IActionResult> GetTransactionDetails(int transactionId)
         {
             try

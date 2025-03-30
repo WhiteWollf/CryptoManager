@@ -50,7 +50,7 @@ namespace CryptoManager.Controllers
             try
             {
                 await _walletService.DeleteWalletAsync(userId);
-                return NoContent();
+                return Ok("Wallet deleted successfully");
             }
             catch (Exception e)
             {

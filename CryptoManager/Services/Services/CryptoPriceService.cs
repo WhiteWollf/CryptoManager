@@ -14,7 +14,7 @@ namespace Services.Services
 {
     public interface ICryptoPriceService
     {
-        Task<CryptoChangeDto> UpdateCryptoPriceAsync(int cryptoId, decimal newPrice);
+        Task<CryptoChangeDto> UpdateCryptoPriceAsync(CryptoPriceChangeDto cryptoPriceChangeDto);
         Task<IList<CryptoPriceLogDto>> GetCryptoChangesAsync(int cryptoId);
     }
     public class CryptoPriceService : ICryptoPriceService
@@ -28,9 +28,9 @@ namespace Services.Services
             _mapper = mapper;
         }
 
-        public async Task<CryptoChangeDto> UpdateCryptoPriceAsync(int cryptoId, decimal newPrice)
+        public async Task<CryptoChangeDto> UpdateCryptoPriceAsync(CryptoPriceChangeDto cryptoPriceChangeDto)
         {
-            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoId);
+            var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoPriceChangeDto.CryptoId);
             if (crypto == null)
             {
                 throw new Exception("Crypto not found");
@@ -40,10 +40,10 @@ namespace Services.Services
                 Name = crypto.Name,
                 Symbol = crypto.Symbol,
                 OldPrice = crypto.Price,
-                NewPrice = newPrice,
+                NewPrice = cryptoPriceChangeDto.NewPrice,
                 Available = crypto.Available
             };
-            crypto.Price = newPrice;
+            crypto.Price = cryptoPriceChangeDto.NewPrice;
 
             _context.CryptoPriceLogs.Add(new CryptoPriceLog
             {
