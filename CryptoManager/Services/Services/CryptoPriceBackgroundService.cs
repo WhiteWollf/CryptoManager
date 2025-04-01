@@ -16,13 +16,11 @@ namespace Services.Services
     public class CryptoPriceBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<CryptoPriceBackgroundService> _logger;
         private readonly Random _random = new();
 
-        public CryptoPriceBackgroundService(IServiceScopeFactory scopeFactory, ILogger<CryptoPriceBackgroundService> logger)
+        public CryptoPriceBackgroundService(IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
-            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
