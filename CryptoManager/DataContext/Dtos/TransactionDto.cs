@@ -18,7 +18,7 @@ namespace Services.Services
     {
         public string CryptoName { get; set; }
         public string Symbol { get; set; }
-        public TransactionType Type { get; set; }
+        public string Type { get; set; }
         public decimal PricePerUnit { get; set; }
         public decimal Amount { get; set; }
         public decimal TotalPrice { get; set; }
