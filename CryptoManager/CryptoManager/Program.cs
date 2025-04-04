@@ -1,4 +1,5 @@
 
+using AutoMapper.Internal;
 using DataContext.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -94,7 +95,9 @@ namespace CryptoManager
             builder.Services.AddCors();
 
             // AutoMapper Config
-            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+            //builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+            //Az összes osztályt hozzáadja, ami a Profile osztályból öröklõdik
+            builder.Services.AddAutoMapper(cfg => cfg.Internal().MethodMappingEnabled = false, AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddEndpointsApiExplorer();
 
