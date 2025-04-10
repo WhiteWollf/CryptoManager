@@ -44,10 +44,6 @@ namespace Services.Services
         }
         public async Task<CryptoDto> AddCryptoAsync(CryptoDto newCrypto)
         {
-            if (_context.Cryptos.Count() >= 15)
-            {
-                throw new Exception("Maximum number of cryptos reached");
-            }
             if (_context.Cryptos.Any(c => c.Symbol == newCrypto.Symbol))
             {
                 throw new Exception("Crypo already exists");

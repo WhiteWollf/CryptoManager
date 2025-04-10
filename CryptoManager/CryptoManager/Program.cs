@@ -51,7 +51,8 @@ namespace CryptoManager
             builder.Services.AddOpenApi();
             builder.Services.AddDbContext<CryptoDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SQL")));
 
-            //Inicializáló szolgáltatás hozzáadása (Cryptok feltöltése, User-ek és Wallet-ek)
+            //Inicializáló szolgáltatás hozzáadása (Cryptok feltöltése, User-ek és Wallet-ek, stb. alap adatok teszteléshez)
+            //Minden indításnál visszaállítja, hogy fix legyen és pontosan tudjuk a változásokat figyelni
             builder.Services.AddHostedService<InitializerService>();
 
             //Háttér szolgáltatás hozzáadása (Cryptok árának frissítése)
