@@ -58,6 +58,9 @@ namespace CryptoManager
             //Háttér szolgáltatás hozzáadása (Cryptok árának frissítése)
             builder.Services.AddHostedService<CryptoPriceBackgroundService>();
 
+            //Alert figyelõ
+            builder.Services.AddHostedService<AlertWatcherBackgroundService>();
+
             builder.Services.AddLocalServices();
 
 
@@ -108,7 +111,7 @@ namespace CryptoManager
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(options=>
+                app.UseSwaggerUI(options =>
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "CryptoManager API");
                 });

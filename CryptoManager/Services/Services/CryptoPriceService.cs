@@ -2,6 +2,7 @@
 using DataContext.Context;
 using DataContext.Dtos;
 using DataContext.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -27,7 +28,7 @@ namespace Services.Services
             _context = context;
             _mapper = mapper;
         }
-
+        [Authorize("Admin")]
         public async Task<CryptoChangeDto> UpdateCryptoPriceAsync(CryptoPriceChangeDto cryptoPriceChangeDto)
         {
             var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoPriceChangeDto.CryptoId);

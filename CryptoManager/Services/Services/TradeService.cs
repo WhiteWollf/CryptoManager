@@ -40,8 +40,8 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
+
             WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId==crypto.Id);
-            
             if(crypto.Available < cryptoBuyDto.Amount)
             {
                 throw new Exception("Not enough crypto available");
@@ -108,6 +108,13 @@ namespace Services.Services
             {
                 throw new Exception("Not enough crypto available");
             }
+
+            //Új ellenőrzés
+            if(walletcrypto.Amount-walletcrypto.LockedAmount < cryptoBuySellDto.Amount)
+            {
+                throw new Exception("Not enough crypto available");
+            }
+
             crypto.Available += cryptoBuySellDto.Amount;
             userWallet.Balance += crypto.Price * cryptoBuySellDto.Amount;
             walletcrypto.Amount -= cryptoBuySellDto.Amount;

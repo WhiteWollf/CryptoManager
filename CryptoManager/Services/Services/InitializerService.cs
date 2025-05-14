@@ -39,7 +39,7 @@ namespace Services.Services
                         new Crypto { Name = "Shiba Inu", Symbol = "SHIB", Price = 50000, Available = 50000 },
                         new Crypto { Name = "Dotnet", Symbol = ".NET", Price = 25000, Available = 25000 },
                         new Crypto { Name = "TenThousandcoin", Symbol = "TENK", Price = 10000, Available = 10000 },
-                        new Crypto { Name = "Thousandcoin", Symbol = "1000", Price = 4321, Available = 1000 },
+                        new Crypto { Name = "Thousandcoin", Symbol = "1000", Price = 1000, Available = 1000 },
                         new Crypto { Name = "FiveHundredcoin", Symbol = "FIVEH", Price = 500, Available = 500 },
                         new Crypto { Name = "TwoHundredcoin", Symbol = "TWOH", Price = 200, Available = 200 },
                         new Crypto { Name = "Hundredcoin", Symbol = "HUND", Price = 100, Available = 100 },

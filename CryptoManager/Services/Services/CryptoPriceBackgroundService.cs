@@ -28,7 +28,7 @@ namespace Services.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 await UpdateCryptoPrices(stoppingToken);
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
 

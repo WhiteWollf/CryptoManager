@@ -67,6 +67,25 @@ namespace Services.Services
                 .ForMember(dest => dest.CurrentUnitPrice, opt => opt.MapFrom(src => src.Crypto.Price))
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")));
 
+            //Alert Mapping
+            CreateMap<AlertCreateDto, Alert>();
+
+            CreateMap<Alert, AlertDto>()
+                .ForMember(dest => dest.CryptoName, opt => opt.MapFrom(src => src.Crypto.Name))
+                .ForMember(dest => dest.Symbol, opt => opt.MapFrom(src => src.Crypto.Symbol))
+                .ReverseMap();
+            CreateMap<AlertLog, AlertLogDto>()
+                .ForMember(dest => dest.CryptoName, opt => opt.MapFrom(src => src.Crypto.Name))
+                .ForMember(dest => dest.Symbol, opt => opt.MapFrom(src => src.Crypto.Symbol))
+                .ReverseMap();
+
+            //MarketListing Mapping
+            CreateMap<MarketListingCreateDto, MarketListing>();
+            CreateMap<MarketListing, MarketListingDto>()
+                .ForMember(dest => dest.CryptoName, opt => opt.MapFrom(src => src.Crypto.Name))
+                .ForMember(dest => dest.Symbol, opt => opt.MapFrom(src => src.Crypto.Symbol))
+                .ReverseMap();
+
         }
     }
 }

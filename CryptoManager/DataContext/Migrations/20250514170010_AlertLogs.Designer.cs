@@ -4,6 +4,7 @@ using DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataContext.Migrations
 {
     [DbContext(typeof(CryptoDbContext))]
-    partial class CryptoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514170010_AlertLogs")]
+    partial class AlertLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,41 +141,6 @@ namespace DataContext.Migrations
                     b.ToTable("CryptoPriceLogs");
                 });
 
-            modelBuilder.Entity("DataContext.Entities.MarketListing", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CryptoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CryptoId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("MarketListings");
-                });
-
             modelBuilder.Entity("DataContext.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -286,9 +254,6 @@ namespace DataContext.Migrations
                     b.Property<decimal>("BuyPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("LockedAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("WalletId", "CryptoId");
 
                     b.HasIndex("CryptoId");
@@ -358,25 +323,6 @@ namespace DataContext.Migrations
                         .IsRequired();
 
                     b.Navigation("Crypto");
-                });
-
-            modelBuilder.Entity("DataContext.Entities.MarketListing", b =>
-                {
-                    b.HasOne("DataContext.Entities.Crypto", "Crypto")
-                        .WithMany()
-                        .HasForeignKey("CryptoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataContext.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Crypto");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataContext.Entities.TransactionLog", b =>
