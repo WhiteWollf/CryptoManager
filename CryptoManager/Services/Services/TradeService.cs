@@ -104,10 +104,10 @@ namespace Services.Services
             {
                 throw new Exception("Crypto not found in wallet");
             }
-            if(walletcrypto.Amount < cryptoBuySellDto.Amount)
+            /*if(walletcrypto.Amount < cryptoBuySellDto.Amount)
             {
                 throw new Exception("Not enough crypto available");
-            }
+            }*/
 
             //Új ellenőrzés
             if(walletcrypto.Amount-walletcrypto.LockedAmount < cryptoBuySellDto.Amount)

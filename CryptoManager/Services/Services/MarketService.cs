@@ -39,6 +39,9 @@ namespace Services.Services
             {
                 throw new Exception("Listing not found");
             }
+            if (listing.UserId == acceptDto.UserId) {
+                throw new Exception("You cannot buy or sell your own listings");    
+            }
             if (listing.Status == EMarketStatus.Inactive)
             {
                 throw new Exception("This listing is Inactive");
@@ -71,10 +74,11 @@ namespace Services.Services
             {
                 throw new Exception("Crypto not found in sellers wallet");
             }
-            if (sellerwallettcrypto.Amount - sellerwallettcrypto.LockedAmount < listing.Amount)
+            //Valszeg felesleges, mivel lockolva van az a mennyiség, dehát elérhető lesz
+            /*if (sellerwallettcrypto.Amount - sellerwallettcrypto.LockedAmount < listing.Amount)
             {
                 throw new Exception("Not enough crypto available");
-            }
+            }*/
             if (buyerWallett.Balance < listing.Price)
             {
                 throw new Exception("Not enough balance on they buyers wallett");
@@ -112,7 +116,7 @@ namespace Services.Services
                 Amount = listing.Amount,
                 PricePerUnit = listing.Price / listing.Amount,
                 Type = TransactionType.Buy,
-                Description = $"{buyer.Name} bought {listing.Amount} {crypto.Name} for {listing.Price} $",
+                Description = $"{buyer.Name} bought {listing.Amount} {crypto.Name} for {listing.Price} from the Market from {seller.Name}$",
                 Timestamp = DateTime.Now
             };
 
@@ -127,7 +131,7 @@ namespace Services.Services
                 Amount = listing.Amount,
                 PricePerUnit = listing.Price / listing.Amount,
                 Type = TransactionType.Sell,
-                Description = $"{seller.Name} sold {listing.Amount} {crypto.Name} for {listing.Price} $",
+                Description = $"{seller.Name} sold {listing.Amount} {crypto.Name} for {listing.Price} on the Market to {buyer.Name}$",
                 Timestamp = DateTime.Now
             };
 
@@ -208,7 +212,10 @@ namespace Services.Services
 
         public async Task<IList<MarketListingDto>> GetMarketListingsAsync()
         {
-            var listings = await _context.MarketListings.Include(ml => ml.Crypto).Where(l => l.Status == EMarketStatus.Active).ToListAsync();
+            var listings = await _context.MarketListings
+                .Include(ml => ml.Crypto)
+                .Where(l => l.Status == EMarketStatus.Active)
+                .ToListAsync();
             return _mapper.Map<IList<MarketListingDto>>(listings);
         }
     }
