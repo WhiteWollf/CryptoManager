@@ -86,6 +86,9 @@ namespace Services.Services
                 .ForMember(dest => dest.Symbol, opt => opt.MapFrom(src => src.Crypto.Symbol))
                 .ReverseMap();
 
+            //Fee Mapping
+            CreateMap<TransactionLog, TransactionFeeDto>();
+
         }
     }
 }

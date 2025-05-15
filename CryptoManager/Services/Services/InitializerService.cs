@@ -150,6 +150,7 @@ namespace Services.Services
                         Amount = 50,
                         PricePerUnit = crypto1.Price,
                         Type = TransactionType.Buy,
+                        FeePrice = 10,
                         Description = $"{admin.Name} bought 50 {crypto1.Name} for {crypto1.Price * 50} $",
                         Timestamp = DateTime.Now
                         },
@@ -160,6 +161,7 @@ namespace Services.Services
                         Amount = 10,
                         PricePerUnit = crypto1.Price,
                         Type = TransactionType.Sell,
+                        FeePrice = 10,
                         Description = $"{admin.Name} sold 10 {crypto1.Name} for {crypto1.Price * 10} $",
                         Timestamp = DateTime.Now
                         },
@@ -170,6 +172,7 @@ namespace Services.Services
                         Amount = 5,
                         PricePerUnit = crypto1.Price,
                         Type = TransactionType.Buy,
+                        FeePrice = 10,
                         Description = $"{admin.Name} bought 5 {crypto2.Name} for {crypto2.Price * 5} $",
                         Timestamp = DateTime.Now
                         },
@@ -180,6 +183,7 @@ namespace Services.Services
                         Amount = 2,
                         PricePerUnit = crypto3.Price,
                         Type = TransactionType.Buy,
+                        FeePrice = 10,
                         Description = $"{admin.Name} bought 2{crypto3.Name} for {crypto3.Price * 2} $",
                         Timestamp = DateTime.Now
                         }
@@ -193,6 +197,10 @@ namespace Services.Services
 
                     _context.CryptoPriceLogs.RemoveRange(await _context.CryptoPriceLogs.ToListAsync(cancellationToken));
                     await _context.SaveChangesAsync(cancellationToken);
+
+                    _context.TransactionFee.RemoveRange(await _context.TransactionFee.ToListAsync(cancellationToken));
+                    await _context.TransactionFee.AddAsync(new TransactionFee { Fee = (decimal)0.2 }, cancellationToken);
+                    await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync(cancellationToken);
                 }catch(Exception e)

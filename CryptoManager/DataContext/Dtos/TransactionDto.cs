@@ -26,4 +26,15 @@ namespace Services.Services
         public decimal CurrentTotalPrice => Amount * CurrentUnitPrice;
         public String Timestamp { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH-mm-ss");
     }
+
+    public class TradeRecepit
+    {
+        public int transactionId { get; set; }
+        public int userId { get; set; }
+        public int cryptoId { get; set; }
+        public decimal amount { get; set; }
+        public decimal fee { get; set; }
+        public decimal totalAmount { get; set; }
+        public String TimeStamp { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH-mm-ss");
+    }
 }

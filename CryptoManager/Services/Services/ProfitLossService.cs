@@ -40,7 +40,7 @@ namespace Services.Services
             List<CryptoProfitLossDto> cryptoProfitLossDtos = new List<CryptoProfitLossDto>();
             foreach (var item in wallet.WalletCryptos)
             {
-                decimal buyValue = item.BuyPrice * item.Amount;
+                decimal buyValue = item.BuyPrice == 0 ? 0 : item.BuyPrice * item.Amount;
                 decimal currentValue = item.Crypto.Price * item.Amount;
 
                 cryptoProfitLossDtos.Add(new CryptoProfitLossDto()
@@ -49,8 +49,8 @@ namespace Services.Services
                     Symbol = item.Crypto.Symbol,
                     BuyValue = buyValue,
                     CurrentValue = currentValue,
-                    ProfitLoss = Math.Round((item.Crypto.Price - item.BuyPrice) * item.Amount, 2),
-                    ProfitLossPercentage = Math.Round((item.Crypto.Price / item.BuyPrice) - 1, 2)
+                    ProfitLoss = Math.Round(item.Crypto.Price * item.Amount - buyValue, 2),
+                    ProfitLossPercentage = item.BuyPrice == 0 ? 1 : Math.Round((item.Crypto.Price / item.BuyPrice) - 1, 2)
                 });
             }
             return cryptoProfitLossDtos;
@@ -67,8 +67,8 @@ namespace Services.Services
             {
                 throw new Exception("Wallet is empty");
             }
-            decimal profitloss = wallet.WalletCryptos.Sum(wc => (wc.Crypto.Price - wc.BuyPrice) * wc.Amount);
-            decimal buyValue = wallet.WalletCryptos.Sum(wc => wc.BuyPrice * wc.Amount);
+            decimal profitloss = wallet.WalletCryptos.Sum(wc => wc.Crypto.Price * wc.Amount - (wc.BuyPrice == 0 ? 0 : wc.BuyPrice * wc.Amount));
+            decimal buyValue = wallet.WalletCryptos.Sum(wc => wc.BuyPrice == 0 ? 0 : wc.BuyPrice * wc.Amount);
             decimal currentValue = wallet.WalletCryptos.Sum(wc => wc.Crypto.Price * wc.Amount);
 
             return new TotalProfitLossDto()

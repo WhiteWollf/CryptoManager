@@ -15,7 +15,10 @@ namespace DataContext.Entities
         public string? Description { get; set; }
         public decimal PricePerUnit { get; set; }
         public decimal Amount { get; set; }
-        public decimal TotalPrice => PricePerUnit * Amount;
+        public decimal BasePrice { get; set; }//=> PricePerUnit * Amount;
+        public decimal TotalPrice { get; set; }// => PricePerUnit * Amount + FeePrice;
+        public decimal FeePrice { get; set; }
+        public decimal? CurrentCryptoPrice { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public TransactionType Type { get; set; }
     }
@@ -23,6 +26,8 @@ namespace DataContext.Entities
     public enum TransactionType
     {
         Buy,
-        Sell
+        Sell, 
+        Gift,
+        GiftReceived
     }
 }
