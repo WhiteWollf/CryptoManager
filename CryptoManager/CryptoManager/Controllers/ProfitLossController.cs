@@ -28,7 +28,7 @@ namespace CryptoManager.Controllers
             }
         }
 
-        [HttpGet("newprofitloss/{userId}")]
+        [HttpGet("transactionlogprofitloss/{userId}")]
         public async Task<IActionResult> GetNewProfitLoss(int userId)
         {
             try
