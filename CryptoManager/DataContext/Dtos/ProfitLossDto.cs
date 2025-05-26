@@ -22,5 +22,18 @@ namespace DataContext.Dtos
         public decimal ProfitLoss { get; set; }
         public decimal ProfitLossPercentage { get; set; }
     }
+    
+
+    //Új az ajándékok miatt stb.
+    public class ProfitLossDetailDto
+    {
+        public string CryptoName { get; set; }
+        public decimal TotalBuyAmount { get; set; }
+        public decimal TotalSellAmount { get; set; }
+        public decimal TotalGiftReceivedAmount { get; set; }
+        public decimal TotalGiftedAmount { get; set; }
+        public decimal TotalProfitLoss { get; set; }
+        public decimal CurrentHoldingValue { get; set; }
+    }
 
 }

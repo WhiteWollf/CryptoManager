@@ -39,7 +39,7 @@ namespace Services.Services
             var transaction = await _context.TransactionLogs
                 .Include(t => t.Crypto)
                 .FirstOrDefaultAsync(t => t.Id == transactionId);
-            if(transaction == null)
+            if (transaction == null)
             {
                 throw new Exception("Transaction not found");
             }

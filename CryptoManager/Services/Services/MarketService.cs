@@ -115,6 +115,7 @@ namespace Services.Services
                 Crypto = crypto,
                 Amount = listing.Amount,
                 PricePerUnit = listing.Price / listing.Amount,
+                TotalPrice = listing.Price,
                 Type = TransactionType.Buy,
                 Description = $"{buyer.Name} bought {listing.Amount} {crypto.Name} for {listing.Price} from the Market from {seller.Name}$",
                 Timestamp = DateTime.Now
@@ -131,6 +132,7 @@ namespace Services.Services
                 Amount = listing.Amount,
                 PricePerUnit = listing.Price / listing.Amount,
                 Type = TransactionType.Sell,
+                TotalPrice = listing.Price,
                 Description = $"{seller.Name} sold {listing.Amount} {crypto.Name} for {listing.Price} on the Market to {buyer.Name}$",
                 Timestamp = DateTime.Now
             };

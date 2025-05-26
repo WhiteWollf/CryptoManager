@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +15,8 @@ namespace Services.Services
 {
     public interface IGiftService
     {
-        Task GiftCryptoAsync(GiftDto dto);
+        Task<string> GiftListingAsync(GiftDto dto);
+        Task<string> AcceptGiftAsync(int giftId, bool accepted);
         Task<List<GiftHistoryDto>> GetGiftHistoryAsync(int userId);
         //Task<IList<AlertDto>> GetActiveAlertsAsync(int userId);
         //Task<IList<AlertLogDto>> GetAlertsHistoryAsync(int userId);
@@ -31,10 +33,9 @@ namespace Services.Services
             _mapper = mapper;
         }
 
-        public async Task GiftCryptoAsync(GiftDto dto)
+        public async Task<string> GiftListingAsync(GiftDto dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 // Validálás
@@ -50,66 +51,22 @@ namespace Services.Services
                 {
                     throw new Exception("User not found");
                 }
-                // Küldő és fogadó felhasználó egyenleg lekérése
+                // Küldő felhasználó egyenleg lekérése
                 var senderWallett = await _context.Wallets.FirstOrDefaultAsync(w =>
                     w.UserId == dto.FromUserId);
                 var senderBalance = await _context.WalletCrypto.FirstOrDefaultAsync(w =>
                     w.WalletId == senderWallett.Id && w.CryptoId == dto.CryptoId);
 
-                var recieverWallett = await _context.Wallets.FirstOrDefaultAsync(w =>
-                    w.UserId == dto.ToUserId);
-                var recieverBalance = await _context.WalletCrypto.FirstOrDefaultAsync(w =>
-                    w.WalletId == recieverWallett.Id && w.CryptoId == dto.CryptoId);
-
                 if (senderBalance == null || senderBalance.Amount < dto.Amount)
                     throw new InvalidOperationException("Nincs elég kriptovalutád az ajándékozáshoz.");
 
-                // Levonás
-                senderBalance.Amount -= dto.Amount;
-
-                // Jóváírás
-                if (recieverBalance == default)
-                {
-                    recieverBalance = new WalletCrypto { WalletId = recieverWallett.Id, CryptoId = dto.CryptoId, Amount = dto.Amount, BuyPrice = 0 };
-                    await _context.WalletCrypto.AddAsync(recieverBalance);
-                }
-                else
-                {
-                    recieverBalance.Amount += dto.Amount;
-                }
-                var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == dto.CryptoId);
-                // Tranzakció naplózása (mindkét fél részére, ha szükséges)
-                var timestamp = DateTime.UtcNow;
-                _context.TransactionLogs.Add(new TransactionLog
-                {
-                    UserId = dto.FromUserId,
-                    CryptoId = dto.CryptoId,
-                    Amount = dto.Amount,
-                    BasePrice = 0,
-                    TotalPrice = 0,
-                    FeePrice = 0,
-                    Type = TransactionType.Gift,
-                    CurrentCryptoPrice = crypto.Price,
-                    Description = $"Ajándékozás {dto.ToUserId} részére",
-                    Timestamp = timestamp
-                });
-
-                _context.TransactionLogs.Add(new TransactionLog
-                {
-                    UserId = dto.ToUserId,
-                    CryptoId = dto.CryptoId,
-                    Amount = dto.Amount,
-                    BasePrice = 0,
-                    TotalPrice = 0,
-                    FeePrice = 0,
-                    Type = TransactionType.GiftReceived,
-                    CurrentCryptoPrice = crypto.Price,
-                    Description = $"Ajándék kapva {dto.FromUserId}-től",
-                    Timestamp = timestamp
-                });
+                senderBalance.LockedAmount += dto.Amount;
+                var newGiftListing = new GiftListing() { SenderUserId = dto.FromUserId, RecieverUserId = dto.ToUserId, Amount = dto.Amount, CryptoId = dto.CryptoId };
+                await _context.GiftListings.AddAsync(newGiftListing);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                return $"Ajándékozási kérelem sikeresen létrehozva. {newGiftListing.Id}";
             }
             catch
             {
@@ -118,14 +75,124 @@ namespace Services.Services
             }
         }
 
+        public async Task<string> AcceptGiftAsync(int giftId, bool accepted)
+        {
+            var giftListing = await _context.GiftListings.FirstOrDefaultAsync(g => g.Id == giftId);
+            if (giftListing == default)
+            {
+                throw new Exception("A megadott ajándék nem található");
+            }
+            //Ha elfogadja az ajándékot
+            if (accepted)
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    var senderUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == giftListing.SenderUserId);
+                    var recieverUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == giftListing.RecieverUserId);
+                    if(senderUser == default || recieverUser == default)
+                    {
+                        throw new Exception("Hiba, felhasználó nem találva!");
+                    }
+                    // Küldő és fogadó felhasználó egyenleg lekérése
+                    var senderWallett = await _context.Wallets.FirstOrDefaultAsync(w =>
+                        w.UserId == giftListing.SenderUserId);
+                    var senderBalance = await _context.WalletCrypto.FirstOrDefaultAsync(w =>
+                        w.WalletId == senderWallett.Id && w.CryptoId == giftListing.CryptoId);
 
+                    var recieverWallett = await _context.Wallets.FirstOrDefaultAsync(w =>
+                        w.UserId == giftListing.RecieverUserId);
+                    var recieverBalance = await _context.WalletCrypto.FirstOrDefaultAsync(w =>
+                        w.WalletId == recieverWallett.Id && w.CryptoId == giftListing.CryptoId);
+
+                    if (senderBalance == null || senderBalance.Amount < giftListing.Amount)
+                        throw new InvalidOperationException("Nincs elég kriptovalutád az ajándékozáshoz.");
+
+                    // Levonás
+                    senderBalance.LockedAmount -= giftListing.Amount;
+                    senderBalance.Amount -= giftListing.Amount;
+
+                    // Jóváírás
+                    if (recieverBalance == default)
+                    {
+                        recieverBalance = new WalletCrypto { WalletId = recieverWallett.Id, CryptoId = giftListing.CryptoId, 
+                            Amount = giftListing.Amount, BuyPrice = 0 };
+                        await _context.WalletCrypto.AddAsync(recieverBalance);
+                    }
+                    else
+                    {
+                        recieverBalance.Amount += giftListing.Amount;
+                    }
+                    var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == giftListing.CryptoId);
+
+                    if (senderBalance.Amount == 0)
+                    {
+                        _context.WalletCrypto.Remove(senderBalance);
+                    }
+                    // Tranzakció naplózása (mindkét fél részére)
+                    var timestamp = DateTime.UtcNow;
+                    _context.TransactionLogs.Add(new TransactionLog
+                    {
+                        UserId = giftListing.SenderUserId,
+                        CryptoId = giftListing.CryptoId,
+                        Amount = giftListing.Amount,
+                        BasePrice = 0,
+                        TotalPrice = 0,
+                        FeePrice = 0,
+                        Type = TransactionType.Gifted,
+                        CurrentCryptoPrice = crypto.Price,
+                        Description = $"Ajándékozás {recieverUser.Name} ({giftListing.RecieverUserId}) részére",
+                        Timestamp = timestamp
+                    });
+
+                    _context.TransactionLogs.Add(new TransactionLog
+                    {
+                        UserId = giftListing.RecieverUserId,
+                        CryptoId = giftListing.CryptoId,
+                        Amount = giftListing.Amount,
+                        BasePrice = 0,
+                        TotalPrice = 0,
+                        FeePrice = 0,
+                        Type = TransactionType.GiftReceived,
+                        CurrentCryptoPrice = crypto.Price,
+                        Description = $"Ajándék kapva {senderUser.Name} ({giftListing.SenderUserId})-től",
+                        Timestamp = timestamp
+                    });
+
+                    _context.GiftListings.Remove(giftListing);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return "Ajándék sikeresen elfogadva!";
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            else  //Ha elutasítja az ajándékot
+            {
+                var senderWallett = await _context.Wallets.FirstOrDefaultAsync(w =>
+                        w.UserId == giftListing.SenderUserId);
+                var senderBalance = await _context.WalletCrypto.FirstOrDefaultAsync(w =>
+                    w.WalletId == senderWallett.Id && w.CryptoId == giftListing.CryptoId);
+
+                senderBalance.LockedAmount -= giftListing.Amount;
+                _context.GiftListings.Remove(giftListing);
+                await _context.SaveChangesAsync();
+
+                return "Ajándék elutasítva!";
+            }
+
+        }
         public async Task<List<GiftHistoryDto>> GetGiftHistoryAsync(int userId)
         {
             var giftLogs = await _context.TransactionLogs
                 .Include(t => t.Crypto)
                 .Include(t => t.User)
                 .Where(t =>
-                    (t.UserId == userId && (t.Type == TransactionType.Gift || t.Type == TransactionType.GiftReceived)))
+                    (t.UserId == userId && (t.Type == TransactionType.Gifted || t.Type == TransactionType.GiftReceived)))
                 .OrderByDescending(t => t.Timestamp)
                 .ToListAsync();
 
@@ -136,7 +203,7 @@ namespace Services.Services
                 // Ellenkező fél keresése a napló alapján (Description-ben benne van az ID)
                 var counterpartyId = 0;
                 string direction = "";
-                if (log.Type == TransactionType.Gift)
+                if (log.Type == TransactionType.Gifted)
                 {
                     direction = "Sent";
                     var toUserId = ExtractUserIdFromDescription(log.Description);

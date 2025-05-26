@@ -31,18 +31,18 @@ namespace Services.Services
         public async Task<TradeRecepit> BuyCryptoAsync(int userId, CryptoBuySellDto cryptoBuyDto)
         {
             var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Symbol == cryptoBuyDto.Symbol);
-            if(crypto == default)
+            if (crypto == default)
             {
                 throw new Exception("Crypto not found");
             }
             Wallet userWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
-            if(userWallet == default)
+            if (userWallet == default)
             {
                 throw new Exception("Wallet not found");
             }
 
-            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId==crypto.Id);
-            if(crypto.Available < cryptoBuyDto.Amount)
+            WalletCrypto walletcrypto = await _context.WalletCrypto.FirstOrDefaultAsync(wc => wc.WalletId == userWallet.Id && wc.CryptoId == crypto.Id);
+            if (crypto.Available < cryptoBuyDto.Amount)
             {
                 throw new Exception("Not enough crypto available");
             }
@@ -52,13 +52,13 @@ namespace Services.Services
             }
             decimal baseAmount = crypto.Price * cryptoBuyDto.Amount;
             var fee = await _context.TransactionFee.FirstOrDefaultAsync();
-            var feeprice = fee.Fee * baseAmount;
+            var feeprice = fee.Fee / 100 * baseAmount;
             var totalAmount = baseAmount + feeprice;
-            userWallet.Balance -= baseAmount+feeprice;
+            userWallet.Balance -= baseAmount + feeprice;
             crypto.Available -= cryptoBuyDto.Amount;
             if (walletcrypto == default)
             {
-                walletcrypto = new WalletCrypto { WalletId = userWallet.Id, CryptoId = crypto.Id, Amount = cryptoBuyDto.Amount, BuyPrice = crypto.Price};
+                walletcrypto = new WalletCrypto { WalletId = userWallet.Id, CryptoId = crypto.Id, Amount = cryptoBuyDto.Amount, BuyPrice = crypto.Price };
                 await _context.WalletCrypto.AddAsync(walletcrypto);
             }
             else
@@ -80,7 +80,7 @@ namespace Services.Services
                 BasePrice = baseAmount,
                 TotalPrice = baseAmount + feeprice,
                 Type = TransactionType.Buy,
-                Description = $"{user.Name} bought {cryptoBuyDto.Amount} {crypto.Name} for {baseAmount} + fee: {feeprice} $",
+                Description = $"{user.Name} bought {cryptoBuyDto.Amount} {crypto.Name} for {baseAmount} + fee: {feeprice} = {totalAmount}$",
                 Timestamp = DateTime.Now
             };
 
@@ -126,7 +126,7 @@ namespace Services.Services
 
             decimal baseAmount = crypto.Price * cryptoBuySellDto.Amount;
             var fee = await _context.TransactionFee.FirstOrDefaultAsync();
-            var feeprice = fee.Fee * baseAmount;
+            var feeprice = fee.Fee / 100 * baseAmount;
             var totalAmount = baseAmount - feeprice;
             crypto.Available += cryptoBuySellDto.Amount;
             userWallet.Balance += baseAmount - feeprice;
@@ -150,7 +150,7 @@ namespace Services.Services
                 BasePrice = baseAmount,
                 TotalPrice = baseAmount - feeprice,
                 Type = TransactionType.Sell,
-                Description = $"{user.Name} sold {cryptoBuySellDto.Amount} {crypto.Name} for {baseAmount} - fee: {feeprice} $",
+                Description = $"{user.Name} sold {cryptoBuySellDto.Amount} {crypto.Name} for {baseAmount} - fee: {feeprice} = {totalAmount}$",
                 Timestamp = DateTime.Now
             };
 

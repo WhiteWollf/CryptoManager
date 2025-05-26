@@ -29,7 +29,8 @@ namespace Services.Services
                 var _context = scope.ServiceProvider.GetRequiredService<CryptoDbContext>();
 
                 await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                try { 
+                try
+                {
                     var cryptos = new List<Crypto>
                     {
                         new Crypto { Name = "Bitcoin", Symbol = "BTC", Price = 1000000, Available = 1000000 },
@@ -132,9 +133,9 @@ namespace Services.Services
                     await _context.SaveChangesAsync(cancellationToken);
                     List<WalletCrypto> walletCrypto = new List<WalletCrypto>()
                     {
-                        new WalletCrypto { CryptoId = crypto1.Id, WalletId = adminWallett.Id, Amount = 40, BuyPrice=crypto1.Price },
-                        new WalletCrypto { CryptoId = crypto2.Id, WalletId = adminWallett.Id, Amount = 5, BuyPrice=crypto2.Price },
-                        new WalletCrypto { CryptoId = crypto3.Id, WalletId = adminWallett.Id, Amount = 2 , BuyPrice = crypto3.Price}
+                        new WalletCrypto { CryptoId = crypto1.Id, WalletId = adminWallett.Id, Amount = 40, BuyPrice=crypto1.Price, LockedAmount = 0},
+                        new WalletCrypto { CryptoId = crypto2.Id, WalletId = adminWallett.Id, Amount = 5, BuyPrice=crypto2.Price, LockedAmount = 0  },
+                        new WalletCrypto { CryptoId = crypto3.Id, WalletId = adminWallett.Id, Amount = 2 , BuyPrice = crypto3.Price, LockedAmount = 0 }
                     };
                     crypto1.Available -= 40;
                     crypto2.Available -= 5;
@@ -151,6 +152,8 @@ namespace Services.Services
                         PricePerUnit = crypto1.Price,
                         Type = TransactionType.Buy,
                         FeePrice = 10,
+                        BasePrice = crypto1.Price,
+                        TotalPrice = crypto1.Price * 50,
                         Description = $"{admin.Name} bought 50 {crypto1.Name} for {crypto1.Price * 50} $",
                         Timestamp = DateTime.Now
                         },
@@ -161,6 +164,8 @@ namespace Services.Services
                         Amount = 10,
                         PricePerUnit = crypto1.Price,
                         Type = TransactionType.Sell,
+                        BasePrice = crypto1.Price,
+                        TotalPrice = crypto1.Price * 10,
                         FeePrice = 10,
                         Description = $"{admin.Name} sold 10 {crypto1.Name} for {crypto1.Price * 10} $",
                         Timestamp = DateTime.Now
@@ -170,9 +175,11 @@ namespace Services.Services
                         CryptoId = crypto2.Id,
                         Crypto = crypto2,
                         Amount = 5,
-                        PricePerUnit = crypto1.Price,
+                        PricePerUnit = crypto2.Price,
                         Type = TransactionType.Buy,
                         FeePrice = 10,
+                        BasePrice = crypto2.Price,
+                        TotalPrice = crypto2.Price * 5,
                         Description = $"{admin.Name} bought 5 {crypto2.Name} for {crypto2.Price * 5} $",
                         Timestamp = DateTime.Now
                         },
@@ -184,6 +191,8 @@ namespace Services.Services
                         PricePerUnit = crypto3.Price,
                         Type = TransactionType.Buy,
                         FeePrice = 10,
+                        BasePrice = crypto3.Price,
+                        TotalPrice = crypto3.Price * 2,
                         Description = $"{admin.Name} bought 2{crypto3.Name} for {crypto3.Price * 2} $",
                         Timestamp = DateTime.Now
                         }
@@ -191,7 +200,7 @@ namespace Services.Services
 
                     adminWallett.Balance = 2500000;
 
-                    _context.TransactionLogs.RemoveRange(await _context.TransactionLogs.Where(t => t.UserId == admin.Id ).ToListAsync(cancellationToken));
+                    _context.TransactionLogs.RemoveRange(await _context.TransactionLogs.Where(t => t.UserId == admin.Id).ToListAsync(cancellationToken));
                     await _context.TransactionLogs.AddRangeAsync(transactionLogs, cancellationToken);
                     await _context.SaveChangesAsync(cancellationToken);
 
@@ -200,10 +209,14 @@ namespace Services.Services
 
                     _context.TransactionFee.RemoveRange(await _context.TransactionFee.ToListAsync(cancellationToken));
                     await _context.TransactionFee.AddAsync(new TransactionFee { Fee = (decimal)0.2 }, cancellationToken);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    _context.GiftListings.RemoveRange(await _context.GiftListings.ToListAsync(cancellationToken));
+                    await _context.SaveChangesAsync(cancellationToken);
 
                     await transaction.CommitAsync(cancellationToken);
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     transaction.Rollback();
                 }

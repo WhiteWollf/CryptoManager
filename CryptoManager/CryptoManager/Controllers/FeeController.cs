@@ -31,6 +31,20 @@ namespace CryptoManager.Controllers
             }
         }
 
+        [HttpGet("CurrentFee")]
+        public async Task<IActionResult> GetCurrentFee()
+        {
+            try
+            {
+                var res = await _feeService.GetCurrentFeeAsync();
+                return Ok($"The current fee is: {res}%");
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserTransactionFees(int userId)
         {

@@ -16,6 +16,7 @@ namespace DataContext.Context
         public DbSet<AlertLog> AlertLogs{ get; set; }
         public DbSet<MarketListing> MarketListings{ get; set; }
         public DbSet<TransactionFee> TransactionFee{ get; set; }
+        public DbSet<GiftListing> GiftListings{ get; set; }
 
         public CryptoDbContext(DbContextOptions<CryptoDbContext> options) : base(options)
         {

@@ -18,12 +18,26 @@ namespace CryptoManager.Controllers
         }
 
         [HttpPost("gift")]
-        public async Task<IActionResult> GiftCrypto([FromBody] GiftDto dto)
+        public async Task<IActionResult> GiftListing([FromBody] GiftDto dto)
         {
             try
             {
-                await _giftService.GiftCryptoAsync(dto);
-                return Ok("Ajándékozás sikeres.");
+                var res = await _giftService.GiftListingAsync(dto);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("accept/{giftId}/{accepted}")]
+        public async Task<IActionResult> GiftCrypto(int giftId, bool accepted)
+        {
+            try
+            {
+                var res = await _giftService.AcceptGiftAsync(giftId, accepted);
+                return Ok(res);
             }
             catch (Exception ex)
             {

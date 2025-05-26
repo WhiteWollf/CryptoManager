@@ -28,6 +28,20 @@ namespace CryptoManager.Controllers
             }
         }
 
+        [HttpGet("newprofitloss/{userId}")]
+        public async Task<IActionResult> GetNewProfitLoss(int userId)
+        {
+            try
+            {
+                var res = await _profitLossService.CalculateProfitLossFromTransactionLogs(userId);
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpGet("details/{userId}")]
         public async Task<IActionResult> GetDetailedProfitLoss(int userId)
         {

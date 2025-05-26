@@ -27,7 +27,7 @@ namespace DataContext.Entities
     {
         Buy,
         Sell, 
-        Gift,
+        Gifted,
         GiftReceived
     }
 }

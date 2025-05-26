@@ -4,6 +4,7 @@ using DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataContext.Migrations
 {
     [DbContext(typeof(CryptoDbContext))]
-    partial class CryptoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250526192520_GiftListings")]
+    partial class GiftListings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,6 +164,10 @@ namespace DataContext.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CryptoId");
+
+                    b.HasIndex("RecieverUserId");
+
+                    b.HasIndex("SenderUserId");
 
                     b.ToTable("GiftListings");
                 });
@@ -423,7 +430,23 @@ namespace DataContext.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataContext.Entities.User", "RecieverUser")
+                        .WithMany()
+                        .HasForeignKey("RecieverUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataContext.Entities.User", "SenderUser")
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Crypto");
+
+                    b.Navigation("RecieverUser");
+
+                    b.Navigation("SenderUser");
                 });
 
             modelBuilder.Entity("DataContext.Entities.MarketListing", b =>

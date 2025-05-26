@@ -18,6 +18,20 @@ namespace Services.Services
         public String Timestamp { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH-mm-ss");
     }
 
+    public class FeeSummaryDto
+    {
+        public int UserId { get; set; }
+        public decimal TotalFeeAmount { get; set; }
+        public List<DailyFeeSummaryDto> DailySummaries { get; set; }
+    }
+
+    public class DailyFeeSummaryDto
+    {
+        public DateTime Date { get; set; }
+        public decimal DailyTotalFee { get; set; }
+        public List<TransactionWithFeeDto> Transactions { get; set; }
+    }
+
     public class TransactionWithFeeDto
     {
         public int TransactionId { get; set; }
@@ -29,13 +43,6 @@ namespace Services.Services
         public DateTime Timestamp { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
-    }
-
-    public class FeeSummaryDto
-    {
-        public int UserId { get; set; }
-        public decimal TotalAmount { get; set; }
-        public List<TransactionWithFeeDto> Transactions { get; set; }
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DataContext.Context;
 using DataContext.Dtos;
+using DataContext.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace Services.Services
     {
         Task<TotalProfitLossDto> TotalProfitLossAsync(int userId);
         Task<IList<CryptoProfitLossDto>> DetailedProfitLossAsync(int userId);
+        Task<IList<ProfitLossDetailDto>> CalculateProfitLossFromTransactionLogs(int userId);
     }
     public class ProfitLossService : IProfitLossService
     {
@@ -63,7 +65,7 @@ namespace Services.Services
             {
                 throw new Exception("Wallet not found");
             }
-            if(wallet.WalletCryptos.Count() == 0)
+            if (wallet.WalletCryptos.Count() == 0)
             {
                 throw new Exception("Wallet is empty");
             }
@@ -77,6 +79,61 @@ namespace Services.Services
                 TotalProfitLossPercentage = Math.Round((currentValue / buyValue) - 1, 2)
             };
 
+        }
+
+        //Új az ajándékok miatt stb.
+        public async Task<IList<ProfitLossDetailDto>> CalculateProfitLossFromTransactionLogs(int userId)
+        {
+            var logs = await _context.TransactionLogs
+                .Where(t => t.UserId == userId)
+                .Include(t=> t.Crypto)
+                .OrderBy(t => t.Timestamp)
+                .ToListAsync();
+
+            var grouped = logs.GroupBy(t => t.CryptoId);
+
+            var result = new List<ProfitLossDetailDto>();
+
+            foreach (var group in grouped)
+            {
+                var cryptoLogs = group.ToList();
+                var cryptoName = cryptoLogs.First().Crypto.Name;
+
+                var totalBuy = cryptoLogs
+                    .Where(t => t.Type == TransactionType.Buy)
+                    .Sum(t => t.TotalPrice);
+
+                var totalSell = cryptoLogs
+                    .Where(t => t.Type == TransactionType.Sell)
+                    .Sum(t => t.TotalPrice);
+
+                var totalGiftReceived = cryptoLogs
+                    .Where(t => t.Type == TransactionType.GiftReceived)
+                    .Sum(t => t.Amount);
+
+                var totalGifted = cryptoLogs
+                    .Where(t => t.Type == TransactionType.Gifted)
+                    .Sum(t => t.TotalPrice);
+
+                var userwallett = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
+                var currentHoldings = await _context.WalletCrypto.Where(wc => wc.WalletId == userwallett.Id && wc.CryptoId == cryptoLogs.First().CryptoId).SumAsync(wc => wc.Amount);
+
+                var crypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Id == cryptoLogs.First().CryptoId);
+                var currentPrice = crypto.Price;
+
+                result.Add(new ProfitLossDetailDto
+                {
+                    CryptoName = cryptoName,
+                    TotalBuyAmount = totalBuy,
+                    TotalSellAmount = totalSell,
+                    TotalGiftReceivedAmount = totalGiftReceived,
+                    TotalGiftedAmount = totalGifted,
+                    TotalProfitLoss = totalSell + (totalGifted) - totalBuy + (currentHoldings*currentPrice),
+                    CurrentHoldingValue = currentHoldings * currentPrice
+                });
+            }
+
+            return result;
         }
     }
 }
