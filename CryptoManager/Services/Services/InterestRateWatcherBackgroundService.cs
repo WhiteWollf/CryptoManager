@@ -59,7 +59,7 @@ namespace Services.Services
                         if (userwalettcrypto != null)
                         {
                             var earnedAmount = lockItem.TotalAmount - lockItem.Amount;
-                            userwalettcrypto.Amount += earnedAmount * (decimal)0.85; // -15%
+                            userwalettcrypto.Amount += earnedAmount;
                             userwalettcrypto.LockedAmount -= lockItem.Amount;
                         }
                         else
