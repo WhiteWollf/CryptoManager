@@ -4,6 +4,7 @@ using DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataContext.Migrations
 {
     [DbContext(typeof(CryptoDbContext))]
-    partial class CryptoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250527071922_CryptoInterestRateANDSavingLock")]
+    partial class CryptoInterestRateANDSavingLock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Alerts", (string)null);
+                    b.ToTable("Alerts");
                 });
 
             modelBuilder.Entity("DataContext.Entities.AlertLog", b =>
@@ -80,7 +83,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AlertLogs", (string)null);
+                    b.ToTable("AlertLogs");
                 });
 
             modelBuilder.Entity("DataContext.Entities.Crypto", b =>
@@ -108,7 +111,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cryptos", (string)null);
+                    b.ToTable("Cryptos");
                 });
 
             modelBuilder.Entity("DataContext.Entities.CryptoInterestRate", b =>
@@ -129,7 +132,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("CryptoId");
 
-                    b.ToTable("CryptoInterestRates", (string)null);
+                    b.ToTable("CryptoInterestRates");
                 });
 
             modelBuilder.Entity("DataContext.Entities.CryptoPriceLog", b =>
@@ -156,7 +159,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("CryptoId");
 
-                    b.ToTable("CryptoPriceLogs", (string)null);
+                    b.ToTable("CryptoPriceLogs");
                 });
 
             modelBuilder.Entity("DataContext.Entities.GiftListing", b =>
@@ -183,7 +186,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("CryptoId");
 
-                    b.ToTable("GiftListings", (string)null);
+                    b.ToTable("GiftListings");
                 });
 
             modelBuilder.Entity("DataContext.Entities.MarketListing", b =>
@@ -218,7 +221,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MarketListings", (string)null);
+                    b.ToTable("MarketListings");
                 });
 
             modelBuilder.Entity("DataContext.Entities.Role", b =>
@@ -235,7 +238,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("DataContext.Entities.SavingLock", b =>
@@ -252,19 +255,10 @@ namespace DataContext.Migrations
                     b.Property<int>("CryptoId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
@@ -276,7 +270,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SavingLocks", (string)null);
+                    b.ToTable("SavingLocks");
                 });
 
             modelBuilder.Entity("DataContext.Entities.TransactionFee", b =>
@@ -292,7 +286,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TransactionFee", (string)null);
+                    b.ToTable("TransactionFee");
                 });
 
             modelBuilder.Entity("DataContext.Entities.TransactionLog", b =>
@@ -342,7 +336,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TransactionLogs", (string)null);
+                    b.ToTable("TransactionLogs");
                 });
 
             modelBuilder.Entity("DataContext.Entities.User", b =>
@@ -367,7 +361,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("DataContext.Entities.Wallet", b =>
@@ -386,7 +380,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Wallets", (string)null);
+                    b.ToTable("Wallets");
                 });
 
             modelBuilder.Entity("DataContext.Entities.WalletCrypto", b =>
@@ -410,7 +404,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("CryptoId");
 
-                    b.ToTable("WalletCrypto", (string)null);
+                    b.ToTable("WalletCrypto");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -425,7 +419,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("RoleUser", (string)null);
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("DataContext.Entities.Alert", b =>

@@ -50,17 +50,25 @@ namespace Services.Services
                         new Crypto { Name = "Onecoin", Symbol = "ONE", Price = 1, Available = 1 }
                     };
                     _context.Cryptos.RemoveRange(await _context.Cryptos.Where(c => !cryptos.Select(a => a.Symbol).Contains(c.Symbol)).ToListAsync(cancellationToken));
+
+                    _context.CryptoInterestRates.RemoveRange(await _context.CryptoInterestRates.ToListAsync());
+
                     foreach (var crypto in cryptos)
                     {
                         var existingCrypto = await _context.Cryptos.FirstOrDefaultAsync(c => c.Symbol == crypto.Symbol, cancellationToken);
                         if (existingCrypto == null)
                         {
-                            _context.Cryptos.Add(crypto);
+                            var tempcrypto = await _context.Cryptos.AddAsync(crypto, cancellationToken);
+
+                            await _context.CryptoInterestRates.AddAsync(new CryptoInterestRate { CryptoId = tempcrypto.Entity.Id, InterestRate = 5 }, cancellationToken);
+
                         }
                         else
                         {
                             existingCrypto.Price = crypto.Price;
                             existingCrypto.Available = crypto.Available;
+                            await _context.CryptoInterestRates.AddAsync(new CryptoInterestRate { CryptoId = existingCrypto.Id, InterestRate = 5 }, cancellationToken);
+
                         }
                     }
 
@@ -212,6 +220,9 @@ namespace Services.Services
                     await _context.SaveChangesAsync(cancellationToken);
 
                     _context.GiftListings.RemoveRange(await _context.GiftListings.ToListAsync(cancellationToken));
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    _context.SavingLocks.RemoveRange(await _context.SavingLocks.ToListAsync(cancellationToken));
                     await _context.SaveChangesAsync(cancellationToken);
 
                     await transaction.CommitAsync(cancellationToken);

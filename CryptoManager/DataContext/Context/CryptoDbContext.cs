@@ -12,15 +12,17 @@ namespace DataContext.Context
         public DbSet<Crypto> Cryptos { get; set; }
         public DbSet<CryptoPriceLog> CryptoPriceLogs { get; set; }
         public DbSet<TransactionLog> TransactionLogs { get; set; }
-        public DbSet<Alert> Alerts{ get; set; }
-        public DbSet<AlertLog> AlertLogs{ get; set; }
-        public DbSet<MarketListing> MarketListings{ get; set; }
-        public DbSet<TransactionFee> TransactionFee{ get; set; }
-        public DbSet<GiftListing> GiftListings{ get; set; }
+        public DbSet<Alert> Alerts { get; set; }
+        public DbSet<AlertLog> AlertLogs { get; set; }
+        public DbSet<MarketListing> MarketListings { get; set; }
+        public DbSet<TransactionFee> TransactionFee { get; set; }
+        public DbSet<GiftListing> GiftListings { get; set; }
+        public DbSet<CryptoInterestRate> CryptoInterestRates { get; set; }
+        public DbSet<SavingLock> SavingLocks { get; set; }
 
         public CryptoDbContext(DbContextOptions<CryptoDbContext> options) : base(options)
         {
-            
+
         }
     }
 }

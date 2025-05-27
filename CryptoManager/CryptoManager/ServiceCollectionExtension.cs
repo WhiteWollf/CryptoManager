@@ -18,6 +18,7 @@ namespace CryptoManager
             services.AddScoped<IMarketService, MarketService>();
             services.AddScoped<IFeeService, FeeService>();
             services.AddScoped<IGiftService, GiftService>();
+            services.AddScoped<ISavingLockService, SavingLockService>();
         }
     }
 }

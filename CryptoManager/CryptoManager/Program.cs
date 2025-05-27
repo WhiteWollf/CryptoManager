@@ -60,6 +60,8 @@ namespace CryptoManager
 
             //Alert figyelõ
             builder.Services.AddHostedService<AlertWatcherBackgroundService>();
+            //Saving figyelõ
+            builder.Services.AddHostedService<DailyInterestBackgroundService>();
 
             builder.Services.AddLocalServices();
 
